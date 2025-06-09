@@ -1,40 +1,20 @@
 'use client';
 
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction, useCallback } from 'react';
+import Image from 'next/image';
 
 interface ChessBoardProps {
   boardSize: number;
   numQueens: number;
   currentQueens: [number, number][];
   setCurrentQueens: Dispatch<SetStateAction<[number, number][]>>;
-  onUndo?: () => void;
 }
 
-export default function ChessBoard({ boardSize, numQueens, currentQueens, setCurrentQueens, onUndo }: ChessBoardProps) {
+export default function ChessBoard({ boardSize, numQueens, currentQueens, setCurrentQueens }: ChessBoardProps) {
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [unsafePositions, setUnsafePositions] = useState<[number, number][]>([]);
 
-  useEffect(() => {
-    checkSolution(currentQueens);
-  }, [currentQueens, boardSize, numQueens]);
-
-  const handleCellClick = (row: number, col: number) => {
-    const isQueenPresent = currentQueens.some(([qRow, qCol]) => qRow === row && qCol === col);
-    let newQueens: [number, number][];
-
-    if (isQueenPresent) {
-      newQueens = currentQueens.filter(([qRow, qCol]) => !(qRow === row && qCol === col));
-    } else {
-      if (currentQueens.length < numQueens) {
-        newQueens = [...currentQueens, [row, col]];
-      } else {
-        newQueens = currentQueens;
-      }
-    }
-    setCurrentQueens(newQueens);
-  };
-
-  const checkSolution = (queens: [number, number][]) => {
+  const checkSolution = useCallback((queens: [number, number][]) => {
     if (queens.length < numQueens) {
       setUnsafePositions([]);
       setIsValid(null);
@@ -61,6 +41,26 @@ export default function ChessBoard({ boardSize, numQueens, currentQueens, setCur
     
     setUnsafePositions(unsafe);
     setIsValid(unsafe.length === 0);
+  }, [numQueens]);
+
+  useEffect(() => {
+    checkSolution(currentQueens);
+  }, [currentQueens, boardSize, numQueens, checkSolution]);
+
+  const handleCellClick = (row: number, col: number) => {
+    const isQueenPresent = currentQueens.some(([qRow, qCol]) => qRow === row && qCol === col);
+    let newQueens: [number, number][];
+
+    if (isQueenPresent) {
+      newQueens = currentQueens.filter(([qRow, qCol]) => !(qRow === row && qCol === col));
+    } else {
+      if (currentQueens.length < numQueens) {
+        newQueens = [...currentQueens, [row, col]];
+      } else {
+        newQueens = currentQueens;
+      }
+    }
+    setCurrentQueens(newQueens);
   };
 
   const isQueen = (row: number, col: number) => {
@@ -95,7 +95,13 @@ export default function ChessBoard({ boardSize, numQueens, currentQueens, setCur
               onClick={() => handleCellClick(rowIndex, colIndex)}
             >
               {isQueen(rowIndex, colIndex) && (
-                <img src="/queen.png" alt="Queen" className="w-3/4 h-3/4 object-contain" />
+                <Image 
+                  src="/queen.png" 
+                  alt="Queen" 
+                  width={30}
+                  height={30}
+                  className="w-3/4 h-3/4 object-contain"
+                />
               )}
             </div>
           ))
