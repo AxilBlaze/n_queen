@@ -1,103 +1,216 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import ChessBoard from '@/components/ChessBoard';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [numQueens, setNumQueens] = useState(8);
+  const [currentQueens, setCurrentQueens] = useState<[number, number][]>([]);
+  const [queenHistory, setQueenHistory] = useState<[number, number][][]>([]);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  useEffect(() => {
+    // Reset currentQueens when numQueens changes
+    setCurrentQueens([]);
+    setQueenHistory([]);
+  }, [numQueens]);
+
+  const handleReset = () => {
+    setCurrentQueens([]);
+    setQueenHistory([]);
+  };
+
+  const handleUndo = () => {
+    if (queenHistory.length > 0) {
+      const previousState = queenHistory[queenHistory.length - 1];
+      setCurrentQueens(previousState);
+      setQueenHistory(queenHistory.slice(0, -1));
+    }
+  };
+
+  const handleQueenChange: Dispatch<SetStateAction<[number, number][]>> = (newQueens) => {
+    if (typeof newQueens === 'function') {
+      setCurrentQueens((prev) => {
+        const result = newQueens(prev);
+        setQueenHistory([...queenHistory, prev]);
+        return result;
+      });
+    } else {
+      setQueenHistory([...queenHistory, currentQueens]);
+      setCurrentQueens(newQueens);
+    }
+  };
+
+  const toggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
+  };
+
+  const lightSquareColor = isDarkTheme ? '#D1E6B9' : 'rgba(255, 235, 205, 1)';
+  const darkSquareColor = isDarkTheme ? '#8BB461' : 'rgba(184, 139, 74, 1)';
+
+  return (
+    <div className={`min-h-screen ${isDarkTheme ? 'bg-[#242424]' : 'bg-white'}`}>
+      {/* Navigation Bar */}
+      <nav className={`flex items-center justify-between p-4 ${isDarkTheme ? 'bg-[#2f2f2f]' : 'bg-gray-200'} text-white shadow-md`}>
+        <div className="flex items-center gap-2">
+          <span className={`text-xl font-bold ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>NQUEEN SOLVER</span>
+        </div>
+        <div className="flex gap-4">
+          <a href="#" className={`${isDarkTheme ? 'hover:text-gray-300' : 'text-gray-700 hover:text-gray-900'}`}>Solver</a>
+          <a href="#" className={`${isDarkTheme ? 'hover:text-gray-300' : 'text-gray-700 hover:text-gray-900'}`}>Know more</a>
+          <a href="#" className={`${isDarkTheme ? 'hover:text-gray-300' : 'text-gray-700 hover:text-gray-900'}`}>Developer</a>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main 
+        className="flex flex-col md:flex-row p-8 gap-8 max-w-7xl mx-auto"
+        style={{
+          '--chessboard-light-square': lightSquareColor,
+          '--chessboard-dark-square': darkSquareColor,
+        } as React.CSSProperties}
+      >
+        {/* Left Section: Chessboard and Controls */}
+        <div className="flex flex-col items-center gap-6 w-full md:w-1/2">
+          <div className="w-full max-w-[280px] aspect-square bg-gray-600 rounded-xl shadow-xl overflow-hidden chess-board">
+            <ChessBoard 
+              boardSize={numQueens} 
+              numQueens={numQueens} 
+              currentQueens={currentQueens} 
+              setCurrentQueens={handleQueenChange}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+
+          {/* Sliders */}
+          <div className={`w-full max-w-[280px] flex flex-col gap-4 p-4 ${isDarkTheme ? 'bg-[#2f2f2f]' : 'bg-gray-200'} rounded-lg shadow-md text-white`}>
+            <div className="flex items-center justify-between">
+              <label htmlFor="numQueensSlider" className={`text-sm ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>Board Size & Queens: {numQueens}</label>
+              <input
+                type="range"
+                id="numQueensSlider"
+                min="4"
+                max="12"
+                value={numQueens}
+                onChange={(e) => setNumQueens(Number(e.target.value))}
+                className="w-3/4 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg [&::-webkit-slider-thumb]:bg-green-500 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full"
+              />
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="w-full max-w-[280px] flex flex-wrap justify-center gap-4">
+            <button 
+              onClick={toggleTheme}
+              className={`px-6 py-2 rounded-md transition-colors ${isDarkTheme ? 'bg-[#8BB461] text-white hover:bg-[#7aa056]' : 'bg-green-600 text-white hover:bg-green-700'}`}
+            >
+              Theme
+            </button>
+            <button
+              onClick={handleReset}
+              className={`px-6 py-2 rounded-md transition-colors ${isDarkTheme ? 'bg-[#8BB461] text-white hover:bg-[#7aa056]' : 'bg-green-600 text-white hover:bg-green-700'}`}
+            >
+              Reset
+            </button>
+            <button 
+              onClick={() => {
+                const cols = new Array(numQueens).fill(0);
+                const leftDiagonal = new Array(numQueens * 2).fill(0);
+                const rightDiagonal = new Array(numQueens * 2).fill(0);
+                const cur: number[] = [];
+
+                const placeQueens = (i: number): boolean => {
+                  if (i === numQueens) {
+                    return true;
+                  }
+
+                  for (let j = 0; j < numQueens; j++) {
+                    if (cols[j] || rightDiagonal[i + j] || leftDiagonal[i - j + numQueens - 1]) {
+                      continue;
+                    }
+
+                    cols[j] = 1;
+                    rightDiagonal[i + j] = 1;
+                    leftDiagonal[i - j + numQueens - 1] = 1;
+                    cur.push(j);
+
+                    if (placeQueens(i + 1)) {
+                      return true;
+                    }
+
+                    cur.pop();
+                    cols[j] = 0;
+                    rightDiagonal[i + j] = 0;
+                    leftDiagonal[i - j + numQueens - 1] = 0;
+                  }
+
+                  return false;
+                };
+
+                if (placeQueens(0)) {
+                  const solution: [number, number][] = cur.map((col, row) => [row, col]);
+                  setQueenHistory([...queenHistory, currentQueens]);
+                  setCurrentQueens(solution);
+                }
+              }}
+              className={`px-6 py-2 rounded-md transition-colors ${isDarkTheme ? 'bg-[#8BB461] text-white hover:bg-[#7aa056]' : 'bg-green-600 text-white hover:bg-green-700'}`}
+            >
+              Solve
+            </button>
+            <button 
+              onClick={handleUndo}
+              disabled={queenHistory.length === 0}
+              className={`px-6 py-2 text-white rounded-md transition-colors ${
+                queenHistory.length === 0 
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : isDarkTheme ? 'bg-[#8BB461] hover:bg-[#7aa056]' : 'bg-green-600 hover:bg-green-700'
+              }`}
+            >
+              Undo
+            </button>
+          </div>
+        </div>
+
+        {/* Right Section: Challenge and How to Use */}
+        <div className={`w-full md:w-1/2 p-6 ${isDarkTheme ? 'bg-[#2f2f2f]' : 'bg-gray-300'} rounded-lg shadow-lg ${isDarkTheme ? 'text-white' : 'text-gray-800'} flex flex-col gap-6`}>
+          <div className="space-y-4">
+            <h2 className={`text-3xl font-bold ${isDarkTheme ? 'text-[#8BB461]' : 'text-green-700'}`}>The Challenge</h2>
+            <p className={`leading-relaxed ${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>
+              The goal is simple: <span className={`${isDarkTheme ? 'font-bold text-white' : 'font-bold text-gray-900'}`}>place N chess queens on an N×N chessboard so that no two queens threaten each other.</span> This
+              challenge tests your strategic thinking and pattern
+              recognition skills. As the board size increases, the puzzle
+              becomes exponentially more difficult. For example, while an
+              8×8 board has 92 solutions, a 12×12 board has 14,200,000
+              solutions!
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className={`text-3xl font-bold ${isDarkTheme ? 'text-[#8BB461]' : 'text-green-700'}`}>How to Play</h2>
+            <ol className="list-decimal list-inside space-y-3 leading-relaxed text-gray-200">
+              <li className="flex items-start gap-2">
+                <span className={`${isDarkTheme ? 'text-[#8BB461]' : 'text-green-700'} font-bold`}>1.</span>
+                <span className={`${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>Click on a cell to place or remove a queen.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className={`${isDarkTheme ? 'text-[#8BB461]' : 'text-green-700'} font-bold`}>2.</span>
+                <span className={`${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>Unsafe queen positions will be highlighted in red.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className={`${isDarkTheme ? 'text-[#8BB461]' : 'text-green-700'} font-bold`}>3.</span>
+                <span className={`${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>Click <span className={`${isDarkTheme ? 'font-bold text-white' : 'font-bold text-gray-900'}`}>Solve</span> to find a solution automatically.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className={`${isDarkTheme ? 'text-[#8BB461]' : 'text-green-700'} font-bold`}>4.</span>
+                <span className={`${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>Use <span className={`${isDarkTheme ? 'font-bold text-white' : 'font-bold text-gray-900'}`}>Reset</span> to clear the board.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className={`${isDarkTheme ? 'text-[#8BB461]' : 'text-green-700'} font-bold`}>5.</span>
+                <span className={`${isDarkTheme ? 'text-gray-200' : 'text-gray-700'}`}>Toggle between themes with the theme button.</span>
+              </li>
+            </ol>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
