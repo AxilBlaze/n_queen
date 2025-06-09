@@ -60,7 +60,7 @@ export default function Home() {
             href="https://your-portfolio-website.com"
             target="_blank"
             rel="noopener noreferrer"
-            className={`px-4 py-2 rounded-md transition-colors ${isDarkTheme ? 'bg-[#8BB461] text-white hover:bg-[#7aa056]' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+            className={`px-6 py-2 rounded-md transition-colors no-underline ${isDarkTheme ? 'bg-[#8BB461] text-white hover:bg-[#7aa056]' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
           >
             Know the Developer
           </a>
