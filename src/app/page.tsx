@@ -56,9 +56,14 @@ export default function Home() {
           <span className={`text-xl font-bold ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>NQUEEN SOLVER</span>
         </div>
         <div className="flex gap-4">
-          <a href="#" className={`${isDarkTheme ? 'hover:text-gray-300' : 'text-gray-700 hover:text-gray-900'}`}>Solver</a>
-          <a href="#" className={`${isDarkTheme ? 'hover:text-gray-300' : 'text-gray-700 hover:text-gray-900'}`}>Know more</a>
-          <a href="#" className={`${isDarkTheme ? 'hover:text-gray-300' : 'text-gray-700 hover:text-gray-900'}`}>Developer</a>
+          <a 
+            href="https://your-portfolio-website.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`px-4 py-2 rounded-md transition-colors ${isDarkTheme ? 'bg-[#8BB461] text-white hover:bg-[#7aa056]' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+          >
+            Know the Developer
+          </a>
         </div>
       </nav>
 
